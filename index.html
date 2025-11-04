@@ -52,10 +52,7 @@
     font-size: 1rem;
     box-sizing: border-box;
   }
-  textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
+  textarea { resize: vertical; min-height: 80px; }
   button {
     background: #0072ff;
     color: white;
@@ -65,24 +62,47 @@
     cursor: pointer;
     transition: 0.3s;
   }
-  button:disabled {
-    background: #aaa;
-    cursor: not-allowed;
+  button:disabled { background: #aaa; cursor: not-allowed; }
+  button:hover:not(:disabled) { background: #005ecb; }
+  .small-btn { background: #28a745; font-size: 0.9rem; margin-top: 5px; }
+  label { font-weight: bold; color: #333; margin-top: 10px; display: block; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
   }
-  button:hover:not(:disabled) {
-    background: #005ecb;
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #e6f0ff;
+    color: #0072ff;
+    font-weight: 600;
+    transition: 0.3s;
+    margin: 0 5px;
   }
-  .small-btn {
-    background: #28a745;
-    font-size: 0.9rem;
-    margin-top: 5px;
+  .tab-btn.active {
+    background: #0072ff;
+    color: white;
   }
-  label {
-    font-weight: bold;
-    color: #333;
-    margin-top: 10px;
-    display: block;
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+  /* Forum */
+  .forum-post {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
+  .forum-post strong { color: #0072ff; }
+  .forum-post small { color: #666; display: block; margin-top: 4px; }
+
   /* Toast */
   .toast {
     position: fixed;
@@ -99,52 +119,67 @@
     transition: opacity 0.4s ease;
     z-index: 1000;
   }
-  .toast.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .toast.show { opacity: 1; pointer-events: auto; }
 </style>
 </head>
 <body>
 
 <div class="container">
   <h1>💧 VARUNETRA SATHI</h1>
-  <p>Report water & drainage issues quickly in your area</p>
+  <div class="tabs">
+    <div class="tab-btn active" data-tab="report">📤 Report</div>
+    <div class="tab-btn" data-tab="forum">💬 Forum</div>
+  </div>
 
-  <form id="reportForm">
-    <label>👤 Full Name</label>
-    <input name="name" placeholder="Your name" required>
+  <!-- REPORT TAB -->
+  <div id="report" class="tab-content active">
+    <p>Report water & drainage issues quickly in your area</p>
+    <form id="reportForm">
+      <label>👤 Full Name</label>
+      <input name="name" placeholder="Your name" required>
 
-    <label>📞 Phone Number</label>
-    <input name="phone" type="tel" placeholder="+91 98xxxxxx" required>
+      <label>📞 Phone Number</label>
+      <input name="phone" type="tel" placeholder="+91 98xxxxxx" required>
 
-    <label>🏠 Street Address</label>
-    <input name="address" placeholder="House/Street, Landmark" required>
+      <label>🏠 Street Address</label>
+      <input name="address" placeholder="House/Street, Landmark" required>
 
-    <label>🌆 City</label>
-    <input name="city" required>
+      <label>🌆 City</label>
+      <input name="city" required>
 
-    <label>🗺️ State</label>
-    <input name="state" required>
+      <label>🗺️ State</label>
+      <input name="state" required>
 
-    <label>📮 PIN Code</label>
-    <input name="pin" pattern="[0-9]{6}" placeholder="6-digit PIN" required>
-    <button type="button" class="small-btn" onclick="fillLocation()">📍 Use My Location</button>
+      <label>📮 PIN Code</label>
+      <input name="pin" pattern="[0-9]{6}" placeholder="6-digit PIN" required>
+      <button type="button" class="small-btn" onclick="fillLocation()">📍 Use My Location</button>
 
-    <label>🚧 Problem</label>
-    <select name="problem" required>
-      <option value="">Select a problem</option>
-      <option value="Closed drain nearby">Closed drain nearby</option>
-      <option value="Less water flow">Less water flow</option>
-      <option value="Dirty water">Dirty water</option>
-      <option value="Others">Others</option>
-    </select>
+      <label>🚧 Problem</label>
+      <select name="problem" required>
+        <option value="">Select a problem</option>
+        <option value="Closed drain nearby">Closed drain nearby</option>
+        <option value="Less water flow">Less water flow</option>
+        <option value="Dirty water">Dirty water</option>
+        <option value="Others">Others</option>
+      </select>
 
-    <label>📝 Additional Details (optional)</label>
-    <textarea name="details" placeholder="Extra details"></textarea>
+      <label>📝 Additional Details (optional)</label>
+      <textarea name="details" placeholder="Extra details"></textarea>
 
-    <button type="submit">📤 Submit Report</button>
-  </form>
+      <button type="submit">📤 Submit Report</button>
+    </form>
+  </div>
+
+  <!-- FORUM TAB -->
+  <div id="forum" class="tab-content">
+    <p>Join community discussions about water issues in your area.</p>
+    <form id="forumForm">
+      <input name="username" placeholder="Your name" required>
+      <textarea name="message" placeholder="Share your thoughts or updates..." required></textarea>
+      <button type="submit">💬 Post</button>
+    </form>
+    <div id="forumPosts" style="margin-top:15px;"></div>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -155,21 +190,21 @@ const form = document.getElementById("reportForm");
 const toast = document.getElementById("toast");
 const button = form.querySelector("button[type='submit']");
 
+/* Toast */
 function showToast(msg, success=true) {
   toast.textContent = msg;
-  toast.style.background = success ? "#28a745" : "#dc3545"; 
+  toast.style.background = success ? "#28a745" : "#dc3545";
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 3000);
 }
 
+/* Report Form */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   button.disabled = true;
   button.textContent = "⏳ Submitting...";
-
   const data = {};
   new FormData(form).forEach((v, k) => data[k] = v);
-
   try {
     await fetch(SCRIPT_URL, {
       method: "POST",
@@ -179,25 +214,21 @@ form.addEventListener("submit", async (e) => {
     });
     showToast("✅ Report submitted successfully!");
     form.reset();
-  } catch (err) {
+  } catch {
     showToast("❌ Failed to submit. Try again.", false);
   }
-
   button.disabled = false;
   button.textContent = "📤 Submit Report";
 });
 
-/* Autofill location */
+/* Location autofill */
 function fillLocation() {
-  if (!navigator.geolocation) {
-    showToast("⚠️ Geolocation not supported", false);
-    return;
-  }
+  if (!navigator.geolocation) return showToast("⚠️ Geolocation not supported", false);
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const { latitude, longitude } = pos.coords;
     try {
-      let res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-      let json = await res.json();
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+      const json = await res.json();
       form.city.value = json.address.city || json.address.town || "";
       form.state.value = json.address.state || "";
       form.pin.value = json.address.postcode || "";
@@ -205,18 +236,57 @@ function fillLocation() {
     } catch {
       showToast("❌ Could not fetch location", false);
     }
-  }, () => {
-    showToast("❌ Location access denied", false);
+  }, () => showToast("❌ Location access denied", false));
+}
+
+/* Tabs switching */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* Forum logic (localStorage) */
+const forumForm = document.getElementById("forumForm");
+const forumPosts = document.getElementById("forumPosts");
+
+function loadPosts() {
+  forumPosts.innerHTML = "";
+  const posts = JSON.parse(localStorage.getItem("forumPosts") || "[]");
+  posts.reverse().forEach(p => {
+    const div = document.createElement("div");
+    div.className = "forum-post";
+    div.innerHTML = `<strong>${p.username}</strong>: ${p.message}<small>${p.date}</small>`;
+    forumPosts.appendChild(div);
   });
 }
+loadPosts();
+
+forumForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const data = {
+    username: forumForm.username.value.trim(),
+    message: forumForm.message.value.trim(),
+    date: new Date().toLocaleString()
+  };
+  if (!data.username || !data.message) return;
+  const posts = JSON.parse(localStorage.getItem("forumPosts") || "[]");
+  posts.push(data);
+  localStorage.setItem("forumPosts", JSON.stringify(posts));
+  forumForm.reset();
+  showToast("💬 Post added!");
+  loadPosts();
+});
 </script>
 
-<!-- Service Worker for PWA -->
+<!-- PWA -->
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(console.error);
 }
 </script>
-
 </body>
 </html>
