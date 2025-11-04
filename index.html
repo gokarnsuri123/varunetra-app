@@ -92,16 +92,33 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
 
-  /* Forum */
-  .forum-post {
-    background: #f8f9fa;
-    padding: 12px;
+  /* Forum UI */
+  #forumForm textarea {
+    border: 1px solid #ccc;
     border-radius: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
-  .forum-post strong { color: #0072ff; }
-  .forum-post small { color: #666; display: block; margin-top: 4px; }
+  .forum-post {
+    background: #f0f6ff;
+    border-left: 5px solid #0072ff;
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .forum-post strong {
+    color: #0072ff;
+    font-size: 1.05rem;
+  }
+  .forum-post small {
+    color: #666;
+    display: block;
+    margin-top: 6px;
+  }
+  #forumPosts {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
 
   /* Toast */
   .toast {
@@ -172,7 +189,7 @@
 
   <!-- FORUM TAB -->
   <div id="forum" class="tab-content">
-    <p>Join community discussions about water issues in your area.</p>
+    <p>Join discussions about water issues in your area 💬</p>
     <form id="forumForm">
       <input name="username" placeholder="Your name" required>
       <textarea name="message" placeholder="Share your thoughts or updates..." required></textarea>
@@ -185,7 +202,7 @@
 <div id="toast" class="toast"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYtMu12HvMV9tprhG02NYfhGk1gIBhP44cC18HVSPoCBiccQTLVZusiP83gelv98PWyg/exec";
+const DATA_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_URL_HERE/exec";
 const form = document.getElementById("reportForm");
 const toast = document.getElementById("toast");
 const button = form.querySelector("button[type='submit']");
@@ -206,14 +223,16 @@ form.addEventListener("submit", async (e) => {
   const data = {};
   new FormData(form).forEach((v, k) => data[k] = v);
   try {
-    await fetch(SCRIPT_URL, {
+    const res = await fetch(DATA_URL, {
       method: "POST",
       body: JSON.stringify(data),
-      headers: {"Content-Type": "application/json"},
-      mode: "no-cors"
+      headers: {"Content-Type": "application/json"}
     });
-    showToast("✅ Report submitted successfully!");
-    form.reset();
+    const result = await res.json();
+    if (result.status === "success") {
+      showToast("✅ Report submitted! ID: " + result.complaintNumber);
+      form.reset();
+    } else throw new Error();
   } catch {
     showToast("❌ Failed to submit. Try again.", false);
   }
@@ -239,7 +258,7 @@ function fillLocation() {
   }, () => showToast("❌ Location access denied", false));
 }
 
-/* Tabs switching */
+/* Tabs */
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -249,7 +268,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
   });
 });
 
-/* Forum logic (localStorage) */
+/* Forum logic */
 const forumForm = document.getElementById("forumForm");
 const forumPosts = document.getElementById("forumPosts");
 
